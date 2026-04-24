@@ -1,0 +1,659 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Свободный интернет</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700;900&family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+  :root {
+    --bg: #080b12;
+    --bg2: #0d1120;
+    --card: #111827;
+    --card2: #1a2236;
+    --border: #1e2d45;
+    --cyan: #00d4ff;
+    --green: #00e676;
+    --purple: #b97cff;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --danger: #ff4d6d;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Background grid */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* Glow orbs */
+  body::after {
+    content: '';
+    position: fixed;
+    top: -200px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 800px;
+    height: 400px;
+    background: radial-gradient(ellipse, rgba(0, 212, 255, 0.08) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* Header */
+  header {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: fadeDown 0.8s ease both;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--cyan);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    padding: 6px 16px;
+    border-radius: 100px;
+    margin-bottom: 20px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    font-family: 'Unbounded', sans-serif;
+    font-size: clamp(28px, 6vw, 52px);
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(135deg, #fff 0%, var(--cyan) 50%, var(--green) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 16px;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 500px;
+    margin: 0 auto;
+  }
+
+  /* Section titles */
+  .section-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 16px;
+    transition: border-color 0.3s, transform 0.2s;
+    animation: fadeUp 0.6s ease both;
+  }
+
+  .card:hover {
+    border-color: rgba(0, 212, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 24px;
+  }
+
+  .card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .icon-cyan { background: rgba(0, 212, 255, 0.12); }
+  .icon-green { background: rgba(0, 230, 118, 0.12); }
+  .icon-purple { background: rgba(185, 124, 255, 0.12); }
+
+  .card-title {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+  }
+
+  .card-desc {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 3px;
+  }
+
+  /* Two-col layout inside card */
+  .card-body {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 28px;
+    align-items: start;
+  }
+
+  @media (max-width: 520px) {
+    .card-body { grid-template-columns: 1fr; }
+    .qr-box { margin: 0 auto; }
+  }
+
+  /* QR */
+  .qr-box {
+    background: #fff;
+    border-radius: 14px;
+    padding: 10px;
+    width: 160px;
+    height: 160px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .qr-box canvas, .qr-box img {
+    max-width: 100%;
+    max-height: 100%;
+    display: block;
+  }
+
+  /* Info side */
+  .info-side { display: flex; flex-direction: column; gap: 16px; }
+
+  .apps-label {
+    font-size: 11px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .apps {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .app-tag {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: var(--text);
+    text-decoration: none;
+    transition: border-color 0.2s, background 0.2s;
+    cursor: pointer;
+  }
+
+  .app-tag:hover { border-color: var(--cyan); background: rgba(0,212,255,0.05); }
+  .app-tag span { font-size: 14px; }
+
+  /* Code block */
+  .code-block {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--cyan);
+    word-break: break-all;
+    line-height: 1.6;
+    max-height: 80px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Copy button */
+  .btn-copy {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 212, 255, 0.1);
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    color: var(--cyan);
+    border-radius: 10px;
+    padding: 10px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-copy:hover { background: rgba(0, 212, 255, 0.2); border-color: var(--cyan); }
+  .btn-copy.green { background: rgba(0,230,118,0.1); border-color: rgba(0,230,118,0.3); color: var(--green); }
+  .btn-copy.green:hover { background: rgba(0,230,118,0.2); border-color: var(--green); }
+  .btn-copy.purple { background: rgba(185,124,255,0.1); border-color: rgba(185,124,255,0.3); color: var(--purple); }
+  .btn-copy.purple:hover { background: rgba(185,124,255,0.2); border-color: var(--purple); }
+  .btn-copy.copied { background: rgba(0,230,118,0.15) !important; border-color: var(--green) !important; color: var(--green) !important; }
+
+  /* Proxy rows */
+  .proxy-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+  }
+
+  .proxy-label {
+    font-size: 11px;
+    color: var(--muted);
+    font-family: 'JetBrains Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    min-width: 65px;
+  }
+
+  .proxy-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    color: #fff;
+    font-weight: 600;
+    flex: 1;
+  }
+
+  .copy-inline {
+    background: none;
+    border: none;
+    color: var(--muted);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s;
+    flex-shrink: 0;
+  }
+  .copy-inline:hover { color: var(--cyan); }
+
+  /* Big tg button */
+  .btn-tg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    background: linear-gradient(135deg, #0088cc, #00b4d8);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    transition: opacity 0.2s, transform 0.2s;
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+  }
+  .btn-tg:hover { opacity: 0.9; transform: translateY(-1px); }
+
+  /* Section spacing */
+  .section { margin-bottom: 48px; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin-top: 60px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .card:nth-child(1) { animation-delay: 0.1s; }
+  .card:nth-child(2) { animation-delay: 0.2s; }
+  .card:nth-child(3) { animation-delay: 0.3s; }
+  .card:nth-child(4) { animation-delay: 0.4s; }
+
+  /* Status dot */
+  .status-dot {
+    display: inline-block;
+    width: 7px; height: 7px;
+    background: var(--green);
+    border-radius: 50%;
+    margin-right: 6px;
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* WG config box */
+  .wg-config {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #94a3b8;
+    line-height: 1.8;
+    white-space: pre;
+    overflow-x: auto;
+  }
+
+  .wg-config .key { color: var(--green); }
+  .wg-config .val { color: var(--text); }
+  .wg-config .comment { color: var(--muted); }
+  .wg-config .section-header { color: var(--cyan); font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <header>
+    <div class="badge"><span class="status-dot"></span>Сервер активен · Нидерланды 🇳🇱</div>
+    <h1>Свободный<br>Интернет</h1>
+    <p class="subtitle">Бесплатный доступ к VPN и прокси для Telegram. Выбери подходящий способ подключения ниже.</p>
+  </header>
+
+  <!-- VPN Section -->
+  <div class="section">
+    <div class="section-title">🔒 VPN подключение</div>
+
+    <!-- VLESS Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-cyan">⚡</div>
+        <div>
+          <div class="card-title">VLESS VPN</div>
+          <div class="card-desc">Быстрый · Современный · Сложно заблокировать</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="qr-box" id="qr-vless"></div>
+        <div class="info-side">
+          <div>
+            <div class="apps-label">Приложения для подключения</div>
+            <div class="apps">
+              <a class="app-tag" href="https://play.google.com/store/apps/details?id=com.v2raytun.android&hl=ru" target="_blank"><span>🤖</span> v2rayTUN (Android)</a>
+              <a class="app-tag" href="https://apps.apple.com/us/app/v2raytun/id6476628951" target="_blank"><span>🍎</span> v2rayTUN (iOS)</a>
+              <a class="app-tag" href="https://apps.apple.com/app/streisand/id6450534064" target="_blank"><span>🍎</span> Streisand (iOS)</a>
+              <a class="app-tag" href="https://apps.apple.com/app/hiddify-proxy-vpn/id6596777532" target="_blank"><span>🍎</span> Hiddify (iOS)</a>
+              <a class="app-tag" href="https://github.com/hiddify/hiddify-app/releases/latest" target="_blank"><span>💻</span> Hiddify (Windows/Mac)</a>
+            </div>
+          </div>
+          <div>
+            <div class="apps-label">Инструкция</div>
+            <div style="font-size:13px; color:#94a3b8; line-height:1.7;">
+              1. Скачай приложение<br>
+              2. Нажми «+» → «Сканировать QR»<br>
+              3. Наведи камеру на код слева<br>
+              4. Нажми подключить ✓
+            </div>
+          </div>
+          <button class="btn-copy" onclick="copyText('vless://22af54ed-7b11-4e36-9a8f-66da85d38b10@176.124.220.195:41442?type=tcp&encryption=none&security=none#vless%20vpn-ptj6psbr', this)">
+            📋 Скопировать ссылку VLESS
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- WireGuard Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-green">🛡️</div>
+        <div>
+          <div class="card-title">WireGuard VPN</div>
+          <div class="card-desc">Надёжный · Простой · Для всех устройств</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="qr-box" id="qr-wg"></div>
+        <div class="info-side">
+          <div>
+            <div class="apps-label">Приложения для подключения</div>
+            <div class="apps">
+              <a class="app-tag" href="https://play.google.com/store/apps/details?id=com.wireguard.android" target="_blank"><span>🤖</span> WireGuard (Android)</a>
+              <a class="app-tag" href="https://apps.apple.com/app/wireguard/id1441195209" target="_blank"><span>🍎</span> WireGuard (iOS)</a>
+              <a class="app-tag" href="https://www.wireguard.com/install/" target="_blank"><span>💻</span> WireGuard (Windows/Mac)</a>
+            </div>
+          </div>
+          <div>
+            <div class="apps-label">Инструкция</div>
+            <div style="font-size:13px; color:#94a3b8; line-height:1.7;">
+              1. Скачай WireGuard<br>
+              2. Нажми «+» → «Сканировать QR»<br>
+              3. Наведи камеру на код слева<br>
+              4. Назови туннель и активируй ✓
+            </div>
+          </div>
+          <button class="btn-copy green" onclick="copyWg(this)">
+            📋 Скопировать конфиг WireGuard
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Telegram Section -->
+  <div class="section">
+    <div class="section-title">✈️ Прокси для Telegram</div>
+
+    <div style="font-size:13px; color:var(--muted); margin-bottom:16px; padding: 0 4px;">
+      Нажми любую кнопку → Telegram откроется и предложит подключиться → «Подключить»
+    </div>
+
+    <!-- MTProto proxies card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-purple">🔗</div>
+        <div>
+          <div class="card-title">MTProto Прокси</div>
+          <div class="card-desc">Официальный протокол Telegram · Одно нажатие · 5 серверов</div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+
+        <div class="proxy-row" style="flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:160px;">
+            <span class="proxy-label">Сервер 1</span>
+            <span class="proxy-val" style="font-size:12px;">213.219.212.245 : 443</span>
+          </div>
+          <a href="tg://proxy?server=213.219.212.245&port=443&secret=9f3c7a8d2e4b1c6f5a7d8e9b0c2f4a1d" class="btn-tg" style="width:auto; padding:8px 16px; font-size:12px; flex-shrink:0;">✈️ Подключить</a>
+        </div>
+
+        <div class="proxy-row" style="flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:160px;">
+            <span class="proxy-label">Сервер 2</span>
+            <span class="proxy-val" style="font-size:12px;">37.139.34.153 : 443</span>
+          </div>
+          <a href="tg://proxy?server=37.139.34.153&port=443&secret=9f3c7a8d2e4b1c6f5a7d8e9b0c2f4a1d" class="btn-tg" style="width:auto; padding:8px 16px; font-size:12px; flex-shrink:0;">✈️ Подключить</a>
+        </div>
+
+        <div class="proxy-row" style="flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:160px;">
+            <span class="proxy-label">Сервер 3</span>
+            <span class="proxy-val" style="font-size:12px;">37.139.32.18 : 443</span>
+          </div>
+          <a href="tg://proxy?server=37.139.32.18&port=443&secret=9f3c7a8d2e4b1c6f5a7d8e9b0c2f4a1d" class="btn-tg" style="width:auto; padding:8px 16px; font-size:12px; flex-shrink:0;">✈️ Подключить</a>
+        </div>
+
+        <div class="proxy-row" style="flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:160px;">
+            <span class="proxy-label">Сервер 4</span>
+            <span class="proxy-val" style="font-size:12px;">146.185.242.117 : 443</span>
+          </div>
+          <a href="tg://proxy?server=146.185.242.117&port=443&secret=9f3c7a8d2e4b1c6f5a7d8e9b0c2f4a1d" class="btn-tg" style="width:auto; padding:8px 16px; font-size:12px; flex-shrink:0;">✈️ Подключить</a>
+        </div>
+
+        <div class="proxy-row" style="flex-wrap:wrap; gap:10px;">
+          <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:160px;">
+            <span class="proxy-label">Сервер 5</span>
+            <span class="proxy-val" style="font-size:12px;">146.185.209.244 : 443</span>
+          </div>
+          <a href="tg://proxy?server=146.185.209.244&port=443&secret=9f3c7a8d2e4b1c6f5a7d8e9b0c2f4a1d" class="btn-tg" style="width:auto; padding:8px 16px; font-size:12px; flex-shrink:0;">✈️ Подключить</a>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- SOCKS5 Card -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon icon-cyan">🧦</div>
+        <div>
+          <div class="card-title">SOCKS5 Прокси</div>
+          <div class="card-desc">Ручная настройка · Настройки → Данные → Прокси → SOCKS5</div>
+        </div>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        <div class="proxy-row">
+          <span class="proxy-label">Сервер</span>
+          <span class="proxy-val">170.168.95.189</span>
+          <button class="copy-inline" onclick="copyInline('170.168.95.189', this)" title="Копировать">📋</button>
+        </div>
+        <div class="proxy-row">
+          <span class="proxy-label">Порт</span>
+          <span class="proxy-val">63699</span>
+          <button class="copy-inline" onclick="copyInline('63699', this)" title="Копировать">📋</button>
+        </div>
+        <div class="proxy-row">
+          <span class="proxy-label">Логин</span>
+          <span class="proxy-val">SxxBmzx5</span>
+          <button class="copy-inline" onclick="copyInline('SxxBmzx5', this)" title="Копировать">📋</button>
+        </div>
+        <div class="proxy-row">
+          <span class="proxy-label">Пароль</span>
+          <span class="proxy-val">XrDur9Lr</span>
+          <button class="copy-inline" onclick="copyInline('XrDur9Lr', this)" title="Копировать">📋</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    Нидерланды 🇳🇱 · 176.124.220.195 · Бесплатно и без ограничений
+  </footer>
+</div>
+
+<script>
+  const VLESS = 'vless://22af54ed-7b11-4e36-9a8f-66da85d38b10@176.124.220.195:41442?type=tcp&encryption=none&security=none#vless%20vpn-ptj6psbr';
+  
+  const WG = `[Interface]
+PrivateKey = aJNTmYfLmqVEF0q6LQn5J9ukE5Al/QxP4Us+M2vzoW0=
+Address = 10.0.0.2/32
+DNS = 1.1.1.1, 1.0.0.1
+MTU = 1420
+
+[Peer]
+PublicKey = /gLdW4MVQEW1INPfnm9TtFZcHk0z+lOA5kiaCzrGKGE=
+AllowedIPs = 0.0.0.0/0, ::/0
+Endpoint = 176.124.220.195:19268`;
+
+  const TG_LINK = 'https://t.me/proxy?server=176.124.220.195&port=443&secret=ee545501a064df41663827cedd41a91f277777772e636c6f7564666c6172652e636f6d';
+
+  function makeQR(id, text) {
+    new QRCode(document.getElementById(id), {
+      text: text,
+      width: 140,
+      height: 140,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+
+  makeQR('qr-vless', VLESS);
+  makeQR('qr-wg', WG);
+
+  function copyText(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      const orig = btn.innerHTML;
+      btn.innerHTML = '✅ Скопировано!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+
+  function copyWg(btn) {
+    copyText(WG, btn);
+  }
+
+  function copyInline(text, btn) {
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = '✅';
+      setTimeout(() => btn.textContent = '📋', 1500);
+    });
+  }
+</script>
+</body>
+</html>
